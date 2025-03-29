@@ -10,10 +10,11 @@ config_version=5
 
 [application]
 
-config/name="evropa"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/name="Evropa"
+run/main_scene="uid://b3ea5xxc1ntjw"
+config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [dotnet]
 
-project/assembly_name="evropa"
+project/assembly_name="Evropa"

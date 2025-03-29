@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evropa.Infrastructure", "Evropa.Infrastructure\Evropa.Infrastructure.csproj", "{05FA674D-7303-4331-8ABC-7DE663F35CB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evropa.ViewModels.Godot", "Evropa.ViewModels.Godot\Evropa.ViewModels.Godot.csproj", "{64417B95-3FCC-4ECF-B755-282ADB6CB12E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evropa", "Evropa\Evropa.csproj", "{1969DDCE-C0DA-45D3-8317-1BEF0F97DD14}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,9 +20,9 @@ Global
 		{05FA674D-7303-4331-8ABC-7DE663F35CB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05FA674D-7303-4331-8ABC-7DE663F35CB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05FA674D-7303-4331-8ABC-7DE663F35CB9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{64417B95-3FCC-4ECF-B755-282ADB6CB12E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{64417B95-3FCC-4ECF-B755-282ADB6CB12E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{64417B95-3FCC-4ECF-B755-282ADB6CB12E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{64417B95-3FCC-4ECF-B755-282ADB6CB12E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1969DDCE-C0DA-45D3-8317-1BEF0F97DD14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1969DDCE-C0DA-45D3-8317-1BEF0F97DD14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1969DDCE-C0DA-45D3-8317-1BEF0F97DD14}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{1969DDCE-C0DA-45D3-8317-1BEF0F97DD14}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal

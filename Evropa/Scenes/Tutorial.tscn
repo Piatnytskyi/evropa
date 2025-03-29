@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://b3ea5xxc1ntjw"]
+
+[ext_resource type="Script" uid="uid://coaffqyx5rxmc" path="res://Nodes/SettlementViewModel.cs" id="1_wduq8"]
+
+[node name="Map" type="Node3D"]
+
+[node name="Settlement" type="Node3D" parent="."]
+script = ExtResource("1_wduq8")
