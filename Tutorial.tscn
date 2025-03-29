@@ -1,8 +1,8 @@
 [gd_scene load_steps=15 format=3 uid="uid://b3ea5xxc1ntjw"]
 
 [ext_resource type="Texture2D" uid="uid://dos7edn4w5tfy" path="res://models/misc/UV.png" id="1_vbqfu"]
-[ext_resource type="PackedScene" uid="uid://r0tnb01aenpc" path="res://models/misc/Wine.blend" id="2_ihr4d"]
-[ext_resource type="Script" path="res://scripts/player.gd" id="3_41wxh"]
+[ext_resource type="PackedScene" uid="uid://r0tnb01aenpc" path="res://models/misc/wine.blend" id="2_ihr4d"]
+[ext_resource type="Script" uid="uid://chgqwiof5hndx" path="res://scripts/player.gd" id="3_41wxh"]
 [ext_resource type="Texture2D" uid="uid://dwwog8rurev0j" path="res://models/misc/Wine.png" id="4_fwxm1"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_7uoir"]
