@@ -1,8 +1,22 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3ea5xxc1ntjw"]
+[gd_scene load_steps=3 format=3 uid="uid://b3ea5xxc1ntjw"]
 
-[ext_resource type="Script" uid="uid://coaffqyx5rxmc" path="res://Nodes/SettlementViewModel.cs" id="1_wduq8"]
+[ext_resource type="Script" uid="uid://coaffqyx5rxmc" path="res://Nodes/Settlement.cs" id="1_wduq8"]
+[ext_resource type="Script" uid="uid://dcwqctrg5m4xe" path="res://Scripts/Spectator.gd" id="2_2o727"]
 
-[node name="Map" type="Node3D"]
+[node name="Main" type="Node3D"]
 
 [node name="Settlement" type="Node3D" parent="."]
 script = ExtResource("1_wduq8")
+
+[node name="Spectator" type="Node3D" parent="." node_paths=PackedStringArray("camera", "elevation_node")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 100, 0)
+script = ExtResource("2_2o727")
+camera = NodePath("Camera3D")
+elevation_node = NodePath(".")
+
+[node name="Camera3D" type="Camera3D" parent="Spectator"]
+
+[node name="GridMap" type="GridMap" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.766044, -0.413176, -0.492404, 0, 0.766044, -0.642788, 0.642788, 0.492404, 0.586824, 0, 0, 0)
