@@ -12,5 +12,5 @@ public interface IPoissonDiskSamplingFacade
 	/// <param name="minDistance">The minimum distance between points.</param>
 	/// <param name="k">The number of attempts to find a valid point.</param>
 	/// <returns>A list of points representing the Poisson disk sampling.</returns>
-	Point[] GeneratePoissonDiskSampling(int width, int height, float minDistance, int k);
+	PointF[] GeneratePoissonDiskSampling(float width, float height, float minDistance, int k);
 }

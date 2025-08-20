@@ -21,7 +21,8 @@ public partial class Settlement : Node
 		{
 			var cube = new MeshInstance3D();
 			cube.Mesh = new BoxMesh();
-			cube.Transform.Translated(new Vector3(point.X, point.Y, 1));
+			cube.Transform = new Transform3D(Basis.Identity, new Vector3(point.X, point.Y, 1));
+
 			AddChild(cube);
 		}
 	}

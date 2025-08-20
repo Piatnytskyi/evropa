@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evropa.Infrastructure", "Ev
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evropa", "Evropa\Evropa.csproj", "{1969DDCE-C0DA-45D3-8317-1BEF0F97DD14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evropa.Core", "Evropa.Core\Evropa.Core.csproj", "{0EE53C77-881E-45E6-B906-8DAEFCBBADE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evropa.World.UnitTests", "Evropa.World.UnitTests\Evropa.World.UnitTests.csproj", "{9A4E595B-AE09-4446-AA40-1C9B9797B3A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{1969DDCE-C0DA-45D3-8317-1BEF0F97DD14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1969DDCE-C0DA-45D3-8317-1BEF0F97DD14}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{1969DDCE-C0DA-45D3-8317-1BEF0F97DD14}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{0EE53C77-881E-45E6-B906-8DAEFCBBADE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EE53C77-881E-45E6-B906-8DAEFCBBADE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EE53C77-881E-45E6-B906-8DAEFCBBADE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EE53C77-881E-45E6-B906-8DAEFCBBADE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A4E595B-AE09-4446-AA40-1C9B9797B3A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A4E595B-AE09-4446-AA40-1C9B9797B3A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A4E595B-AE09-4446-AA40-1C9B9797B3A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A4E595B-AE09-4446-AA40-1C9B9797B3A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
