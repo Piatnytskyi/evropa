@@ -13,7 +13,7 @@ public static class ServiceProviderFactory
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddTransient<RandomSource, MersenneTwister>();
-        serviceCollection.AddTransient<IPoissonDiskSamplingFacade, PoissonDiskSamplingFacade>();
+        serviceCollection.AddTransient<IDiskSampler, UniformPoissonDiskSampler>();
         ServiceProvider = serviceCollection.BuildServiceProvider();
     }
 }

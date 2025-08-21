@@ -7,21 +7,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 public partial class Settlement : Node
 {
-    private readonly IPoissonDiskSamplingFacade _poissonDiskSamplingFacade;
-
-    public Settlement()
-	{
-		_poissonDiskSamplingFacade = ServiceProviderFactory.ServiceProvider.GetRequiredService<IPoissonDiskSamplingFacade>();
-	}
-
 	public override void _Ready()
 	{
-		var points = _poissonDiskSamplingFacade.GeneratePoissonDiskSampling(100, 100, 10.0f, 30);
+		var uniformPoissonDiskSampler = ServiceProviderFactory.ServiceProvider.GetRequiredService<IDiskSampler>();
+		var points = uniformPoissonDiskSampler.SampleCircle(new System.Numerics.Vector2(0, 0), 50, 5);
 		foreach (var point in points)
 		{
 			var cube = new MeshInstance3D();
 			cube.Mesh = new BoxMesh();
-			cube.Transform = new Transform3D(Basis.Identity, new Vector3(point.X, point.Y, 1));
+			cube.Transform = new Transform3D(Basis.Identity, new Vector3(point.X, 1, point.Y));
 
 			AddChild(cube);
 		}
