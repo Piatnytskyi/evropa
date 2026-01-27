@@ -1,7 +1,7 @@
 namespace Evropa.Nodes;
 
-using Evropa.Infrastructure;
-using Evropa.Infrastructure.Math.Abstractions;
+using Evropa.World.Infrastructure;
+using Evropa.World.Infrastructure.Math.Abstractions;
 using Godot;
 using Microsoft.Extensions.DependencyInjection;
 

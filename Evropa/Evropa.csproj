@@ -4,6 +4,6 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Evropa.Infrastructure\Evropa.Infrastructure.csproj" />
+    <ProjectReference Include="..\Evropa.World.Infrastructure\Evropa.World.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

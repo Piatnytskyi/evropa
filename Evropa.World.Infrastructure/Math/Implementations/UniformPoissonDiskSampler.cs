@@ -1,11 +1,11 @@
-namespace Evropa.Infrastructure.Math.Implementations;
+namespace Evropa.World.Infrastructure.Math.Implementations;
 
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Evropa.Core.Constants;
-using Evropa.Core.Structs;
-using Evropa.Infrastructure.Math.Abstractions;
+using Evropa.World.Core.Structs;
+using Evropa.World.Infrastructure.Math.Abstractions;
 using MathNet.Numerics.Random;
 
 // Adapated from java source by Herman Tulleken

@@ -1,4 +1,4 @@
-namespace Evropa.Core.Structs;
+namespace Evropa.World.Core.Structs;
 
 using System.Numerics;
 

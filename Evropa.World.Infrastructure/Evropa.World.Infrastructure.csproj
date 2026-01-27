@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Evropa.World.Core\Evropa.World.Core.csproj" />
     <ProjectReference Include="..\Evropa.Core\Evropa.Core.csproj" />
   </ItemGroup>
 

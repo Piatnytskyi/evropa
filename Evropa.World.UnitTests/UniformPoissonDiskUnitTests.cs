@@ -1,7 +1,7 @@
 namespace Evropa.World.UnitTests;
 
 using System.Numerics;
-using Evropa.Infrastructure.Math.Implementations;
+using Evropa.World.Infrastructure.Math.Implementations;
 using Evropa.World.UnitTests.Data;
 using MathNet.Numerics.Random;
 

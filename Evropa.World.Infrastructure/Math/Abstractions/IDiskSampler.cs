@@ -1,4 +1,4 @@
-namespace Evropa.Infrastructure.Math.Abstractions;
+namespace Evropa.World.Infrastructure.Math.Abstractions;
 
 using System.Collections.Generic;
 using System.Numerics;
