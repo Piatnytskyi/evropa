@@ -11,11 +11,11 @@
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
 script = ExtResource("2_2o727")
 
-[node name="Settlement" type="Node3D" parent="." unique_id=847966030]
-script = ExtResource("1_wduq8")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Settlement" unique_id=784358999]
-mesh = SubResource("SphereMesh_2o727")
-
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=508473767]
 transform = Transform3D(0.766044, -0.413176, -0.492404, 0, 0.766044, -0.642788, 0.642788, 0.492404, 0.586824, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1746235646]
+mesh = SubResource("SphereMesh_2o727")
+
+[node name="Settlement" type="MeshInstance3D" parent="." unique_id=997802880]
+script = ExtResource("1_wduq8")
