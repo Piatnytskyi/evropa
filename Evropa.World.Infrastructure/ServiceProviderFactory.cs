@@ -15,6 +15,8 @@ public static class ServiceProviderFactory
         serviceCollection.AddTransient<RandomSource, MersenneTwister>();
         serviceCollection.AddTransient<IDiskSampler, UniformPoissonDiskSampler>();
         serviceCollection.AddTransient<ITriangulation, DelaunayTriangulation>();
+        serviceCollection.AddTransient<IFibonacciSphereGenerator, FibonacciSphereGenerator>();
+        serviceCollection.AddTransient<IStereographicProjection, StereographicProjection>();
         ServiceProvider = serviceCollection.BuildServiceProvider();
     }
 }
