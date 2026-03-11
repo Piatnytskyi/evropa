@@ -6,7 +6,7 @@ using System.Numerics;
 /// <summary>
 /// Interface for stereographic projection between a sphere and an infinite plane.
 /// </summary>
-public interface IStereographicProjection
+public interface IStereographicProjector
 {
     /// <summary>
     /// Projects a point from a unit sphere onto an infinite plane using stereographic projection.

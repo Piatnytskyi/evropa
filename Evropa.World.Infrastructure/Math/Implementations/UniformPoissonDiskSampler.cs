@@ -16,8 +16,6 @@ using MathNet.Numerics.Random;
 
 public class UniformPoissonDiskSampler : IDiskSampler
 {
-    public const int DefaultPointsPerIteration = 30;
-
     private readonly RandomSource _randomSource;
 
     public UniformPoissonDiskSampler(RandomSource randomSource)
@@ -25,19 +23,14 @@ public class UniformPoissonDiskSampler : IDiskSampler
         _randomSource = randomSource ?? throw new ArgumentNullException(nameof(randomSource));
     }
 
-    public List<Vector2> SampleCircle(Vector2 center, float radius, float minimumDistance, int pointsPerIteration = DefaultPointsPerIteration)
+    public List<Vector2> Sample(SamplingRegion region)
     {
-        return Sample(center - new Vector2(radius), center + new Vector2(radius), radius, minimumDistance, pointsPerIteration);
-    }
-
-    public List<Vector2> SampleRectangle(Vector2 topLeft, Vector2 lowerRight, float minimumDistance, int pointsPerIteration = DefaultPointsPerIteration)
-    {
-        return Sample(topLeft, lowerRight, null, minimumDistance, pointsPerIteration);
+        return Sample(region.TopLeft, region.LowerRight, region.RejectionDistance, region.MinimumDistance, region.PointsPerIteration);
     }
 
     private List<Vector2> Sample(Vector2 topLeft, Vector2 lowerRight, float? rejectionDistance, float minimumDistance, int pointsPerIteration)
     {
-        var settings = new UniformPoissonDiskSamplerSettings
+        var settings = new Settings
         {
             TopLeft = topLeft, LowerRight = lowerRight,
             Dimensions = lowerRight - topLeft,
@@ -49,7 +42,7 @@ public class UniformPoissonDiskSampler : IDiskSampler
         settings.GridWidth = (int) (settings.Dimensions.X / settings.CellSize) + 1;
         settings.GridHeight = (int) (settings.Dimensions.Y / settings.CellSize) + 1;
 
-        var state = new UniformPoissonDiskSamplerState
+        var state = new State
         {
             Grid = new Vector2?[settings.GridWidth, settings.GridHeight],
             ActivePoints = new List<Vector2>(),
@@ -75,7 +68,7 @@ public class UniformPoissonDiskSampler : IDiskSampler
         return state.Points;
     }
 
-    private void AddFirstPoint(ref UniformPoissonDiskSamplerSettings settings, ref UniformPoissonDiskSamplerState state)
+    private void AddFirstPoint(ref Settings settings, ref State state)
     {
         var added = false;
         while (!added)
@@ -100,7 +93,7 @@ public class UniformPoissonDiskSampler : IDiskSampler
         } 
     }
 
-    private bool AddNextPoint(Vector2 point, ref UniformPoissonDiskSamplerSettings settings, ref UniformPoissonDiskSamplerState state)
+    private bool AddNextPoint(Vector2 point, ref Settings settings, ref State state)
     {
         var found = false;
         var q = GenerateRandomAround(point, settings.MinimumDistance);
@@ -145,6 +138,22 @@ public class UniformPoissonDiskSampler : IDiskSampler
     static Vector2 Denormalize(Vector2 point, Vector2 origin, double cellSize)
     {
         return new Vector2((int) ((point.X - origin.X) / cellSize), (int) ((point.Y - origin.Y) / cellSize));
+    }
+
+    private struct Settings
+    {
+        public Vector2 TopLeft, LowerRight, Center;
+        public Vector2 Dimensions;
+        public float? RejectionSqDistance;
+        public float MinimumDistance;
+        public float CellSize;
+        public int GridWidth, GridHeight;
+    }
+
+    private struct State
+    {
+        public Vector2?[,] Grid;
+        public List<Vector2> ActivePoints, Points;
     }
 }
 

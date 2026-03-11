@@ -13,7 +13,7 @@ using Evropa.World.Infrastructure.Math.Abstractions;
 /// 
 /// See: https://en.wikipedia.org/wiki/Stereographic_projection
 /// </summary>
-public class StereographicProjection : IStereographicProjection
+public class StereographicProjector : IStereographicProjector
 {
     /// <inheritdoc />
     public Vector2 ProjectToPlane(Vector3 spherePoint)

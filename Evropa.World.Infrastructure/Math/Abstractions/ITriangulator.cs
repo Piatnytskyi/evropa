@@ -2,9 +2,8 @@ namespace Evropa.World.Infrastructure.Math.Abstractions;
 
 using System.Collections.Generic;
 using System.Numerics;
-using Evropa.World.Core.Structs;
 
-public interface IDiskSampler
+public interface ITriangulator
 {
-    List<Vector2> Sample(SamplingRegion region);
+    List<(Vector2, Vector2, Vector2)> Triangulate(List<Vector2> points);
 }

@@ -10,7 +10,7 @@ using MathNet.Numerics.Random;
 /// Generates evenly distributed points on a sphere using Fibonacci spiral algorithm.
 /// Based on "Fast Poisson Disk Sampling in Arbitrary Dimensions" and implementations from Red Blob Games.
 /// </summary>
-public class FibonacciSphereGenerator : IFibonacciSphereGenerator
+public class FibonacciSphereGenerator : ISphereSampler
 {
     private readonly RandomSource _randomSource;
     
@@ -24,9 +24,9 @@ public class FibonacciSphereGenerator : IFibonacciSphereGenerator
     }
 
     /// <inheritdoc />
-    public List<Vector3> GenerateSpherePoints(int count, float jitter = 0f)
+    public List<Vector3> SampleSphere(int count, float jitter = 0f)
     {
-        var latLongPoints = GenerateLatLongPoints(count, jitter);
+        var latLongPoints = SampleLatLong(count, jitter);
         var result = new List<Vector3>(count);
 
         foreach (var latLong in latLongPoints)
@@ -38,7 +38,7 @@ public class FibonacciSphereGenerator : IFibonacciSphereGenerator
     }
 
     /// <inheritdoc />
-    public List<Vector2> GenerateLatLongPoints(int count, float jitter = 0f)
+    public List<Vector2> SampleLatLong(int count, float jitter = 0f)
     {
         var result = new List<Vector2>(count);
         

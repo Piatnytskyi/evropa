@@ -1,6 +1,7 @@
 namespace Evropa.World.UnitTests;
 
 using System.Numerics;
+using Evropa.World.Core.Structs;
 using Evropa.World.Infrastructure.Math.Implementations;
 using Evropa.World.UnitTests.Data;
 using MathNet.Numerics.Random;
@@ -20,7 +21,7 @@ public class UniformPoissonDiskUnitTests
         Vector2 center, float radius, float minimumDistance, int pointsPerIteration)
     {
         // Act
-        var result = _uniformPoissonDiskSampler.SampleCircle(center, radius, minimumDistance, pointsPerIteration);
+        var result = _uniformPoissonDiskSampler.Sample(new CircleSamplingRegion(center, radius, minimumDistance, pointsPerIteration));
 
         // Assert
         Assert.NotNull(result);

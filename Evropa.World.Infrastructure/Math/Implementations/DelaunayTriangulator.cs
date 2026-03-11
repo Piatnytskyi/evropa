@@ -1,6 +1,7 @@
 namespace Evropa.World.Infrastructure.Math.Implementations;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Evropa.Core.Constants;
@@ -32,7 +33,7 @@ using Evropa.World.Infrastructure.Math.Abstractions;
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-public class DelaunayTriangulation : ITriangulation
+public class DelaunayTriangulator : ITriangulator
 {
     private readonly int[] EDGE_STACK = new int[512];
 
@@ -49,7 +50,7 @@ public class DelaunayTriangulation : ITriangulation
     /// <summary>
     /// The initial points Delaunator was constructed with.
     /// </summary>
-    private Vector2[] points = [];
+    private List<Vector2> points = [];
     /// <summary>
     /// A list of point indices that traverses the hull of the points.
     /// </summary>
@@ -69,29 +70,29 @@ public class DelaunayTriangulation : ITriangulation
     private int hullStart;
     private int hullSize;
 
-    public DelaunayTriangulation()
+    public DelaunayTriangulator()
     {
 
     }
 
-    public (Vector2, Vector2, Vector2)[] Triangulate(Vector2[] points)
+    public List<(Vector2, Vector2, Vector2)> Triangulate(List<Vector2> points)
     {
-        if (points.Length < 3)
+        if (points.Count < 3)
         {
             throw new ArgumentOutOfRangeException("Need at least 3 points");
         }
 
         this.points = points;
-        coords = new float[this.points.Length * 2];
+        coords = new float[this.points.Count * 2];
 
-        for (var i = 0; i < this.points.Length; i++)
+        for (var i = 0; i < this.points.Count; i++)
         {
             var p = this.points[i];
             coords[2 * i] = p.X;
             coords[2 * i + 1] = p.Y;
         }
 
-        var n = points.Length;
+        var n = points.Count;
         var maxTriangles = 2 * n - 5;
 
         triangles = new int[maxTriangles * 3];
@@ -334,10 +335,11 @@ public class DelaunayTriangulation : ITriangulation
         triangles = triangles.Take(trianglesLen).ToArray();
         halfedges = halfedges.Take(trianglesLen).ToArray();
 
-        var result = new (Vector2, Vector2, Vector2)[triangles.Length];
+        var result = new List<(Vector2, Vector2, Vector2)>(triangles.Length / 3);
         for (var t = 0; t < triangles.Length / 3; t++)
         {
-            result[t] = (GetTrianglePoints(t)[0], GetTrianglePoints(t)[1], GetTrianglePoints(t)[2]);
+            var pts = GetTrianglePoints(t);
+            result.Add((pts[0], pts[1], pts[2]));
         }
         return result;
     }
