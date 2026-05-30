@@ -29,7 +29,7 @@ public partial class World : MeshInstance3D
 		var quads2D = quadConverter.ConvertToQuads(triangles2D);
 
 		var planeToSphere = new Dictionary<System.Numerics.Vector2, System.Numerics.Vector3>();
-		for (int i = 0; i < planePoints.Count; i++)
+		for (int i = 0; i < planePoints.Length; i++)
 		{
 			if (!planeToSphere.ContainsKey(planePoints[i]))
 			{

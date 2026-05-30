@@ -1,7 +1,6 @@
 namespace Evropa.World.Infrastructure.Math.Implementations;
 
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using Evropa.Core.Constants;
 using Evropa.World.Core.Structs;
@@ -16,6 +15,8 @@ using MathNet.Numerics.Random;
 
 public class UniformPoissonDiskSampler : IDiskSampler
 {
+    private const int InitialCapacity = 64;
+
     private readonly RandomSource _randomSource;
 
     public UniformPoissonDiskSampler(RandomSource randomSource)
@@ -23,12 +24,12 @@ public class UniformPoissonDiskSampler : IDiskSampler
         _randomSource = randomSource ?? throw new ArgumentNullException(nameof(randomSource));
     }
 
-    public List<Vector2> Sample(SamplingRegion region)
+    public Vector2[] Sample(SamplingRegion region)
     {
         return Sample(region.TopLeft, region.LowerRight, region.RejectionDistance, region.MinimumDistance, region.PointsPerIteration);
     }
 
-    private List<Vector2> Sample(Vector2 topLeft, Vector2 lowerRight, float? rejectionDistance, float minimumDistance, int pointsPerIteration)
+    private Vector2[] Sample(Vector2 topLeft, Vector2 lowerRight, float? rejectionDistance, float minimumDistance, int pointsPerIteration)
     {
         var settings = new Settings
         {
@@ -45,15 +46,17 @@ public class UniformPoissonDiskSampler : IDiskSampler
         var state = new State
         {
             Grid = new Vector2?[settings.GridWidth, settings.GridHeight],
-            ActivePoints = new List<Vector2>(),
-            Points = new List<Vector2>()
+            ActivePoints = new Vector2[InitialCapacity],
+            ActivePointsCount = 0,
+            Points = new Vector2[InitialCapacity],
+            PointsCount = 0
         };
 
         AddFirstPoint(ref settings, ref state);
 
-        while (state.ActivePoints.Count != 0)
+        while (state.ActivePointsCount != 0)
         {
-            var listIndex = _randomSource.Next(state.ActivePoints.Count);
+            var listIndex = _randomSource.Next(state.ActivePointsCount);
 
             var point = state.ActivePoints[listIndex];
             var found = false;
@@ -62,10 +65,24 @@ public class UniformPoissonDiskSampler : IDiskSampler
                 found |= AddNextPoint(point, ref settings, ref state);
 
             if (!found)
-                state.ActivePoints.RemoveAt(listIndex);
+            {
+                state.ActivePoints[listIndex] = state.ActivePoints[--state.ActivePointsCount];
+            }
         }
 
-        return state.Points;
+        if (state.PointsCount == state.Points.Length)
+            return state.Points;
+
+        var result = new Vector2[state.PointsCount];
+        Array.Copy(state.Points, result, state.PointsCount);
+        return result;
+    }
+
+    private static void Append(ref Vector2[] array, ref int count, Vector2 value)
+    {
+        if (count == array.Length)
+            Array.Resize(ref array, array.Length * 2);
+        array[count++] = value;
     }
 
     private void AddFirstPoint(ref Settings settings, ref State state)
@@ -88,8 +105,8 @@ public class UniformPoissonDiskSampler : IDiskSampler
 
             state.Grid[(int) index.X, (int) index.Y] = p;
 
-            state.ActivePoints.Add(p);
-            state.Points.Add(p);
+            Append(ref state.ActivePoints, ref state.ActivePointsCount, p);
+            Append(ref state.Points, ref state.PointsCount, p);
         } 
     }
 
@@ -113,8 +130,8 @@ public class UniformPoissonDiskSampler : IDiskSampler
             if (!tooClose)
             {
                 found = true;
-                state.ActivePoints.Add(q);
-                state.Points.Add(q);
+                Append(ref state.ActivePoints, ref state.ActivePointsCount, q);
+                Append(ref state.Points, ref state.PointsCount, q);
                 state.Grid[(int)qIndex.X, (int)qIndex.Y] = q;
             }
         }
@@ -153,7 +170,10 @@ public class UniformPoissonDiskSampler : IDiskSampler
     private struct State
     {
         public Vector2?[,] Grid;
-        public List<Vector2> ActivePoints, Points;
+        public Vector2[] ActivePoints;
+        public int ActivePointsCount;
+        public Vector2[] Points;
+        public int PointsCount;
     }
 }
 

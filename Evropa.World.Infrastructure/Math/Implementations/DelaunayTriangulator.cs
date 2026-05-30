@@ -1,13 +1,11 @@
 namespace Evropa.World.Infrastructure.Math.Implementations;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Evropa.Core.Constants;
 using Evropa.World.Infrastructure.Math.Abstractions;
 
-// Computes Delaunay triangulation for a set of 2D points using Bowyer-Watson algorithm.
 // Adapted from Delaunator by Vladimir Agafonkin.
 // Ported to C# by Patryk Grech.
 // 
@@ -37,23 +35,11 @@ public class DelaunayTriangulator : ITriangulator
 {
     private readonly int[] EDGE_STACK = new int[512];
 
-    /// <summary>
-    /// One value per half-edge, containing the point index of where a given half edge starts.
-    /// </summary>
     private int[] triangles = [];
 
-    /// <summary>
-    /// One value per half-edge, containing the opposite half-edge in the adjacent triangle, or -1 if there is no adjacent triangle
-    /// </summary>
     private int[] halfedges = [];
 
-    /// <summary>
-    /// The initial points Delaunator was constructed with.
-    /// </summary>
-    private List<Vector2> points = [];
-    /// <summary>
-    /// A list of point indices that traverses the hull of the points.
-    /// </summary>
+    private Vector2[] points = [];
     private int[] hull = [];
 
     private int hashSize;
@@ -75,24 +61,24 @@ public class DelaunayTriangulator : ITriangulator
 
     }
 
-    public List<(Vector2, Vector2, Vector2)> Triangulate(List<Vector2> points)
+    public (Vector2, Vector2, Vector2)[] Triangulate(Vector2[] points)
     {
-        if (points.Count < 3)
+        if (points.Length < 3)
         {
             throw new ArgumentOutOfRangeException("Need at least 3 points");
         }
 
         this.points = points;
-        coords = new float[this.points.Count * 2];
+        coords = new float[this.points.Length * 2];
 
-        for (var i = 0; i < this.points.Count; i++)
+        for (var i = 0; i < this.points.Length; i++)
         {
             var p = this.points[i];
             coords[2 * i] = p.X;
             coords[2 * i + 1] = p.Y;
         }
 
-        var n = points.Count;
+        var n = points.Length;
         var maxTriangles = 2 * n - 5;
 
         triangles = new int[maxTriangles * 3];
@@ -131,7 +117,6 @@ public class DelaunayTriangulator : ITriangulator
         var i1 = 0;
         var i2 = 0;
 
-        // pick a seed point close to the center
         for (int i = 0; i < n; i++)
         {
             var d = Dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
@@ -146,7 +131,6 @@ public class DelaunayTriangulator : ITriangulator
 
         minDist = float.PositiveInfinity;
 
-        // find the point closest to the seed
         for (int i = 0; i < n; i++)
         {
             if (i == i0) continue;
@@ -163,7 +147,6 @@ public class DelaunayTriangulator : ITriangulator
 
         var minRadius = float.PositiveInfinity;
 
-        // find the third point which forms the smallest circumcircle with the first two
         for (int i = 0; i < n; i++)
         {
             if (i == i0 || i == i1) continue;
@@ -205,10 +188,8 @@ public class DelaunayTriangulator : ITriangulator
             dists[i] = Dist(coords[2 * i], coords[2 * i + 1], center.X, center.Y);
         }
 
-        // sort the points by distance from the seed triangle circumcenter
         Quicksort(ids, dists, 0, n - 1);
 
-        // set up the seed triangle as the starting hull
         hullStart = i0;
         hullSize = 3;
 
@@ -236,15 +217,12 @@ public class DelaunayTriangulator : ITriangulator
             var x = coords[2 * i];
             var y = coords[2 * i + 1];
 
-            // skip near-duplicate points
             if (k > 0 && Math.Abs(x - xp) <= MathConstants.Epsilon && Math.Abs(y - yp) <= MathConstants.Epsilon) continue;
             xp = x;
             yp = y;
 
-            // skip seed triangle points
             if (i == i0 || i == i1 || i == i2) continue;
 
-            // find a visible edge on the convex hull using edge hash
             var start = 0;
             for (var j = 0; j < hashSize; j++)
             {
@@ -270,17 +248,14 @@ public class DelaunayTriangulator : ITriangulator
                 q = hullNext[e];
             }
 
-            if (e == int.MaxValue) continue; // likely a near-duplicate point; skip it
+            if (e == int.MaxValue) continue;
 
-            // add the first triangle from the point
             var t = AddTriangle(e, i, hullNext[e], -1, -1, hullTri[e]);
 
-            // recursively flip triangles from the point until they satisfy the Delaunay condition
             hullTri[i] = Legalize(t + 2);
-            hullTri[e] = t; // keep track of boundary triangles on the hull
+            hullTri[e] = t;
             hullSize++;
 
-            // walk forward through the hull, adding more triangles and flipping recursively
             var next = hullNext[e];
             q = hullNext[next];
 
@@ -288,14 +263,13 @@ public class DelaunayTriangulator : ITriangulator
             {
                 t = AddTriangle(next, i, q, hullTri[i], -1, hullTri[next]);
                 hullTri[i] = Legalize(t + 2);
-                hullNext[next] = next; // mark as removed
+                hullNext[next] = next;
                 hullSize--;
                 next = q;
 
                 q = hullNext[next];
             }
 
-            // walk backward from the other side, adding more triangles and flipping
             if (e == start)
             {
                 q = hullPrev[e];
@@ -305,7 +279,7 @@ public class DelaunayTriangulator : ITriangulator
                     t = AddTriangle(q, i, e, -1, hullTri[e], hullTri[q]);
                     Legalize(t + 2);
                     hullTri[q] = t;
-                    hullNext[e] = e; // mark as removed
+                    hullNext[e] = e;
                     hullSize--;
                     e = q;
 
@@ -313,12 +287,10 @@ public class DelaunayTriangulator : ITriangulator
                 }
             }
 
-            // update the hull indices
             hullStart = hullPrev[i] = e;
             hullNext[e] = hullPrev[next] = i;
             hullNext[i] = next;
 
-            // save the two new edges in the hash table
             hullHash[HashKey(x, y)] = i;
             hullHash[HashKey(coords[2 * e], coords[2 * e + 1])] = e;
         }
@@ -331,15 +303,15 @@ public class DelaunayTriangulator : ITriangulator
             s = hullNext[s];
         }
 
-        //// trim typed triangle mesh arrays
         triangles = triangles.Take(trianglesLen).ToArray();
         halfedges = halfedges.Take(trianglesLen).ToArray();
 
-        var result = new List<(Vector2, Vector2, Vector2)>(triangles.Length / 3);
-        for (var t = 0; t < triangles.Length / 3; t++)
+        var triCount = triangles.Length / 3;
+        var result = new (Vector2, Vector2, Vector2)[triCount];
+        for (var t = 0; t < triCount; t++)
         {
             var pts = GetTrianglePoints(t);
-            result.Add((pts[0], pts[1], pts[2]));
+            result[t] = (pts[0], pts[1], pts[2]);
         }
         return result;
     }
@@ -349,31 +321,15 @@ public class DelaunayTriangulator : ITriangulator
         var i = 0;
         int ar;
 
-        // recursion eliminated with a fixed-size stack
         while (true)
         {
             var b = halfedges[a];
 
-            /* if the pair of triangles doesn't satisfy the Delaunay condition
-                * (p1 is inside the circumcircle of [p0, pl, pr]), flip them,
-                * then do the same check/flip recursively for the new pair of triangles
-                *
-                *           pl                    pl
-                *          /||\                  /  \
-                *       al/ || \bl            al/    \a
-                *        /  ||  \              /      \
-                *       /  a||b  \    flip    /___ar___\
-                *     p0\   ||   /p1   =>   p0\---bl---/p1
-                *        \  ||  /              \      /
-                *       ar\ || /br             b\    /br
-                *          \||/                  \  /
-                *           pr                    pr
-                */
             int a0 = a - a % 3;
             ar = a0 + (a + 2) % 3;
 
             if (b == -1)
-            { // convex hull edge
+            {
                 if (i == 0) break;
                 a = EDGE_STACK[--i];
                 continue;
@@ -401,7 +357,6 @@ public class DelaunayTriangulator : ITriangulator
 
                 var hbl = halfedges[bl];
 
-                // edge swapped on the other side of the hull (rare); fix the halfedge reference
                 if (hbl == -1)
                 {
                     var e = hullStart;
@@ -421,7 +376,6 @@ public class DelaunayTriangulator : ITriangulator
 
                 var br = b0 + (b + 1) % 3;
 
-                // don't worry about hitting the cap: it can only happen on extremely degenerate input
                 if (i < EDGE_STACK.Length)
                 {
                     EDGE_STACK[i++] = br;
@@ -437,7 +391,6 @@ public class DelaunayTriangulator : ITriangulator
         return ar;
     }
 
-    // TODO: Would be nice to move these geometric predicates and utility functions to a separate classes.
     private static bool InCircle(float ax, float ay, float bx, float by, float cx, float cy, float px, float py)
     {
         var dx = ax - px;
@@ -479,7 +432,7 @@ public class DelaunayTriangulator : ITriangulator
     private static float PseudoAngle(float dx, float dy)
     {
         var p = dx / (Math.Abs(dx) + Math.Abs(dy));
-        return (dy > 0 ? 3 - p : 1 + p) / 4; // [0..1]
+        return (dy > 0 ? 3 - p : 1 + p) / 4;
     }
     private static void Quicksort(int[] ids, float[] dists, int left, int right)
     {
@@ -580,9 +533,6 @@ public class DelaunayTriangulator : ITriangulator
         return points;
     }
 
-    /// <summary>
-    /// Returns the three point indices of a given triangle id.
-    /// </summary>
     private int[] PointsOfTriangle(int t)
     {
         var points = new int[3];
@@ -594,8 +544,5 @@ public class DelaunayTriangulator : ITriangulator
         return points;
     }
 
-    /// <summary>
-    /// Returns the three half-edges of a given triangle id.
-    /// </summary>
     private static int[] EdgesOfTriangle(int t) => new int[] { 3 * t, 3 * t + 1, 3 * t + 2 };
 }

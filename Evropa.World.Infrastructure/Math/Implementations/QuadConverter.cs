@@ -9,54 +9,80 @@ using Evropa.World.Infrastructure.Math.Abstractions;
 
 public class QuadConverter : IQuadConverter
 {
-    public List<(Vector2, Vector2, Vector2, Vector2)> ConvertToQuads(List<(Vector2, Vector2, Vector2)> triangles)
+    public (Vector2, Vector2, Vector2, Vector2)[] ConvertToQuads((Vector2, Vector2, Vector2)[] triangles)
     {
-        if (triangles.Count == 0)
-            return new List<(Vector2, Vector2, Vector2, Vector2)>();
+        if (triangles.Length == 0)
+            return Array.Empty<(Vector2, Vector2, Vector2, Vector2)>();
 
-        var faces = triangles
-            .Select(t => new List<Vector2> { t.Item1, t.Item2, t.Item3 })
-            .ToList();
+        var faces = new Vector2[triangles.Length][];
+        for (int i = 0; i < triangles.Length; i++)
+        {
+            faces[i] = new[] { triangles[i].Item1, triangles[i].Item2, triangles[i].Item3 };
+        }
 
         var (quadFaces, remainingTriangles) = RemoveEdges(faces);
 
-        var result = new List<(Vector2, Vector2, Vector2, Vector2)>();
-        SubdivideTriangles(remainingTriangles, result);
-        SubdivideQuads(quadFaces, result);
+        var result = new (Vector2, Vector2, Vector2, Vector2)[remainingTriangles.Length * 3 + quadFaces.Length * 4];
+        int writeIndex = 0;
+        SubdivideTriangles(remainingTriangles, result, ref writeIndex);
+        SubdivideQuads(quadFaces, result, ref writeIndex);
 
         return result;
     }
 
-    private static (List<List<Vector2>> quads, List<List<Vector2>> remainingTriangles) RemoveEdges(
-        List<List<Vector2>> faces)
+    private static (Vector2[][] quads, Vector2[][] remainingTriangles) RemoveEdges(
+        Vector2[][] faces)
     {
-        var edgeToFaces = new Dictionary<Edge, List<int>>();
+        var edgeCounts = new Dictionary<Edge, int>(faces.Length * 3);
+        var edgeOrder = new Edge[faces.Length * 3];
+        int edgeOrderCount = 0;
 
-        for (int i = 0; i < faces.Count; i++)
+        for (int i = 0; i < faces.Length; i++)
         {
             foreach (var edge in GetEdges(faces[i]))
             {
-                if (!edgeToFaces.TryGetValue(edge, out var faceList))
+                if (edgeCounts.TryGetValue(edge, out var count))
                 {
-                    faceList = new List<int>();
-                    edgeToFaces[edge] = faceList;
+                    edgeCounts[edge] = count + 1;
                 }
+                else
+                {
+                    edgeCounts[edge] = 1;
+                    edgeOrder[edgeOrderCount++] = edge;
+                }
+            }
+        }
 
-                faceList.Add(i);
+        var edgeToFaces = new Dictionary<Edge, int[]>(edgeCounts.Count);
+        var edgeFill = new Dictionary<Edge, int>(edgeCounts.Count);
+        foreach (var kvp in edgeCounts)
+        {
+            edgeToFaces[kvp.Key] = new int[kvp.Value];
+            edgeFill[kvp.Key] = 0;
+        }
+
+        for (int i = 0; i < faces.Length; i++)
+        {
+            foreach (var edge in GetEdges(faces[i]))
+            {
+                var arr = edgeToFaces[edge];
+                arr[edgeFill[edge]++] = i;
             }
         }
 
         var available = new HashSet<Edge>(edgeToFaces.Keys);
         var merged = new HashSet<int>();
-        var quadFaces = new List<List<Vector2>>();
+        var quadFaces = new Vector2[faces.Length / 2][];
+        int quadFacesCount = 0;
 
-        foreach (var edge in edgeToFaces.Keys.ToList())
+        for (int k = 0; k < edgeOrderCount; k++)
         {
+            var edge = edgeOrder[k];
             if (!available.Contains(edge))
                 continue;
 
             var faceIndices = edgeToFaces[edge];
-            if (faceIndices.Count != 2)
+            if (faceIndices.Length != 2)
                 continue;
 
             int f1 = faceIndices[0], f2 = faceIndices[1];
@@ -64,58 +90,60 @@ public class QuadConverter : IQuadConverter
             if (merged.Contains(f1) || merged.Contains(f2))
                 continue;
 
-            if (faces[f1].Count != 3 || faces[f2].Count != 3)
+            if (faces[f1].Length != 3 || faces[f2].Length != 3)
                 continue;
 
-            var quad = MergeTriangles(faces[f1], faces[f2], edge);
-            quadFaces.Add(quad);
+            quadFaces[quadFacesCount++] = MergeTriangles(faces[f1], faces[f2], edge);
             merged.Add(f1);
             merged.Add(f2);
 
-            // Remove all six edges of both original triangles from the available set,
-            // preventing any edge of the resulting quad from being removed.
             foreach (var e in GetEdges(faces[f1]))
                 available.Remove(e);
             foreach (var e in GetEdges(faces[f2]))
                 available.Remove(e);
         }
 
-        var remainingTriangles = new List<List<Vector2>>();
-        for (int i = 0; i < faces.Count; i++)
+        if (quadFacesCount != quadFaces.Length)
+            Array.Resize(ref quadFaces, quadFacesCount);
+
+        var remainingTriangles = new Vector2[faces.Length - merged.Count][];
+        int remainingIndex = 0;
+        for (int i = 0; i < faces.Length; i++)
         {
             if (!merged.Contains(i))
-                remainingTriangles.Add(faces[i]);
+                remainingTriangles[remainingIndex++] = faces[i];
         }
 
         return (quadFaces, remainingTriangles);
     }
 
-    private static List<Vector2> MergeTriangles(List<Vector2> face1, List<Vector2> face2, Edge sharedEdge)
+    private static Vector2[] MergeTriangles(Vector2[] face1, Vector2[] face2, Edge sharedEdge)
     {
         var other1 = face1.First(v => !v.Equals(sharedEdge.V1) && !v.Equals(sharedEdge.V2));
         var other2 = face2.First(v => !v.Equals(sharedEdge.V1) && !v.Equals(sharedEdge.V2));
 
-        var quad = new List<Vector2> { sharedEdge.V1, other1, sharedEdge.V2, other2 };
+        var quad = new[] { sharedEdge.V1, other1, sharedEdge.V2, other2 };
         if (SignedArea(quad) < 0)
-            quad = new List<Vector2> { sharedEdge.V1, other2, sharedEdge.V2, other1 };
+            quad = new[] { sharedEdge.V1, other2, sharedEdge.V2, other1 };
 
         return quad;
     }
 
-    private static float SignedArea(List<Vector2> polygon)
+    private static float SignedArea(Vector2[] polygon)
     {
         float sum = 0;
-        for (int i = 0; i < polygon.Count; i++)
+        for (int i = 0; i < polygon.Length; i++)
         {
-            var j = (i + 1) % polygon.Count;
+            var j = (i + 1) % polygon.Length;
             sum += polygon[i].X * polygon[j].Y - polygon[j].X * polygon[i].Y;
         }
         return sum;
     }
 
     private static void SubdivideTriangles(
-        List<List<Vector2>> triangles,
-        List<(Vector2, Vector2, Vector2, Vector2)> result)
+        Vector2[][] triangles,
+        (Vector2, Vector2, Vector2, Vector2)[] result,
+        ref int writeIndex)
     {
         foreach (var tri in triangles)
         {
@@ -128,15 +156,16 @@ public class QuadConverter : IQuadConverter
             var mCA = (c + a) * 0.5f;
             var center = (a + b + c) / 3f;
 
-            result.Add((a, mAB, center, mCA));
-            result.Add((b, mBC, center, mAB));
-            result.Add((c, mCA, center, mBC));
+            result[writeIndex++] = (a, mAB, center, mCA);
+            result[writeIndex++] = (b, mBC, center, mAB);
+            result[writeIndex++] = (c, mCA, center, mBC);
         }
     }
 
     private static void SubdivideQuads(
-        List<List<Vector2>> quads,
-        List<(Vector2, Vector2, Vector2, Vector2)> result)
+        Vector2[][] quads,
+        (Vector2, Vector2, Vector2, Vector2)[] result,
+        ref int writeIndex)
     {
         foreach (var quad in quads)
         {
@@ -151,18 +180,18 @@ public class QuadConverter : IQuadConverter
             var mDA = (d + a) * 0.5f;
             var center = (a + b + c + d) * 0.25f;
 
-            result.Add((a, mAB, center, mDA));
-            result.Add((b, mBC, center, mAB));
-            result.Add((c, mCD, center, mBC));
-            result.Add((d, mDA, center, mCD));
+            result[writeIndex++] = (a, mAB, center, mDA);
+            result[writeIndex++] = (b, mBC, center, mAB);
+            result[writeIndex++] = (c, mCD, center, mBC);
+            result[writeIndex++] = (d, mDA, center, mCD);
         }
     }
 
-    private static IEnumerable<Edge> GetEdges(List<Vector2> face)
+    private static IEnumerable<Edge> GetEdges(Vector2[] face)
     {
-        for (int i = 0; i < face.Count; i++)
+        for (int i = 0; i < face.Length; i++)
         {
-            yield return new Edge(face[i], face[(i + 1) % face.Count]);
+            yield return new Edge(face[i], face[(i + 1) % face.Length]);
         }
     }
 }

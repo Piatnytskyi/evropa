@@ -35,9 +35,9 @@ public class UniformPoissonDiskUnitTests
         });
 
         // Check that all points are at least minimumDistance apart
-        for (int i = 0; i < result.Count; i++)
+        for (int i = 0; i < result.Length; i++)
         {
-            for (int j = i + 1; j < result.Count; j++)
+            for (int j = i + 1; j < result.Length; j++)
             {
                 var distance = Vector2.Distance(result[i], result[j]);
                 Assert.True(distance >= minimumDistance, 

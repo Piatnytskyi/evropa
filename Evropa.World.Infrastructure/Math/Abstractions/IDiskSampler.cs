@@ -1,10 +1,9 @@
 namespace Evropa.World.Infrastructure.Math.Abstractions;
 
-using System.Collections.Generic;
 using System.Numerics;
 using Evropa.World.Core.Structs;
 
 public interface IDiskSampler
 {
-    List<Vector2> Sample(SamplingRegion region);
+    Vector2[] Sample(SamplingRegion region);
 }
