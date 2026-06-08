@@ -3,7 +3,7 @@ namespace Evropa.World.Infrastructure.Math.Implementations;
 using System;
 using System.Numerics;
 using Evropa.Core.Constants;
-using Evropa.World.Core.Structs;
+using Evropa.World.Core.Structs.Samplings;
 using Evropa.World.Infrastructure.Math.Abstractions;
 using MathNet.Numerics.Random;
 
@@ -13,32 +13,31 @@ using MathNet.Numerics.Random;
 // The algorithm is from the "Fast Poisson Disk Sampling in Arbitrary Dimensions" paper by Robert Bridson
 // http://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf
 
-public class UniformPoissonDiskSampler : IDiskSampler
+public class UniformPoissonSampler<TRegion> : IPlaneSampler<TRegion> where TRegion : ISamplingRegion
 {
     private const int InitialCapacity = 64;
 
     private readonly RandomSource _randomSource;
 
-    public UniformPoissonDiskSampler(RandomSource randomSource)
+    public UniformPoissonSampler(RandomSource randomSource)
     {
         _randomSource = randomSource ?? throw new ArgumentNullException(nameof(randomSource));
     }
 
-    public Vector2[] Sample(SamplingRegion region)
+    public Vector2[] Sample(TRegion region)
     {
-        return Sample(region.TopLeft, region.LowerRight, region.RejectionDistance, region.MinimumDistance, region.PointsPerIteration);
+        return Sample(region, region.TopLeft, region.LowerRight, region.MinimumDistance, region.PointsPerIteration);
     }
 
-    private Vector2[] Sample(Vector2 topLeft, Vector2 lowerRight, float? rejectionDistance, float minimumDistance, int pointsPerIteration)
+    private Vector2[] Sample(TRegion region, Vector2 topLeft, Vector2 lowerRight, float minimumDistance, int pointsPerIteration)
     {
         var settings = new Settings
         {
-            TopLeft = topLeft, LowerRight = lowerRight,
+            TopLeft = topLeft, 
+            LowerRight = lowerRight,
             Dimensions = lowerRight - topLeft,
-            Center = (topLeft + lowerRight) / 2,
             CellSize = minimumDistance / MathConstants.SquareRootTwo,
-            MinimumDistance = minimumDistance,
-            RejectionSqDistance = rejectionDistance == null ? null : rejectionDistance * rejectionDistance
+            MinimumDistance = minimumDistance
         };
         settings.GridWidth = (int) (settings.Dimensions.X / settings.CellSize) + 1;
         settings.GridHeight = (int) (settings.Dimensions.Y / settings.CellSize) + 1;
@@ -52,7 +51,7 @@ public class UniformPoissonDiskSampler : IDiskSampler
             PointsCount = 0
         };
 
-        AddFirstPoint(ref settings, ref state);
+        AddFirstPoint(region, ref settings, ref state);
 
         while (state.ActivePointsCount != 0)
         {
@@ -62,7 +61,7 @@ public class UniformPoissonDiskSampler : IDiskSampler
             var found = false;
 
             for (var k = 0; k < pointsPerIteration; k++)
-                found |= AddNextPoint(point, ref settings, ref state);
+                found |= AddNextPoint(region, point, ref settings, ref state);
 
             if (!found)
             {
@@ -85,7 +84,7 @@ public class UniformPoissonDiskSampler : IDiskSampler
         array[count++] = value;
     }
 
-    private void AddFirstPoint(ref Settings settings, ref State state)
+    private void AddFirstPoint(TRegion region, ref Settings settings, ref State state)
     {
         var added = false;
         while (!added)
@@ -97,7 +96,7 @@ public class UniformPoissonDiskSampler : IDiskSampler
             var yr = settings.TopLeft.Y + settings.Dimensions.Y * d;
 
             var p = new Vector2((float) xr, (float) yr);
-            if (settings.RejectionSqDistance != null && Vector2.DistanceSquared(settings.Center, p) > settings.RejectionSqDistance)
+            if (!region.Contains(p))
                 continue;
             added = true;
 
@@ -110,14 +109,12 @@ public class UniformPoissonDiskSampler : IDiskSampler
         } 
     }
 
-    private bool AddNextPoint(Vector2 point, ref Settings settings, ref State state)
+    private bool AddNextPoint(TRegion region, Vector2 point, ref Settings settings, ref State state)
     {
         var found = false;
         var q = GenerateRandomAround(point, settings.MinimumDistance);
 
-        if (q.X >= settings.TopLeft.X && q.X < settings.LowerRight.X && 
-            q.Y > settings.TopLeft.Y && q.Y < settings.LowerRight.Y &&
-            (settings.RejectionSqDistance == null || Vector2.DistanceSquared(settings.Center, q) <= settings.RejectionSqDistance))
+        if (region.Contains(q))
         {
             var qIndex = Denormalize(q, settings.TopLeft, settings.CellSize);
             var tooClose = false;
@@ -159,9 +156,8 @@ public class UniformPoissonDiskSampler : IDiskSampler
 
     private struct Settings
     {
-        public Vector2 TopLeft, LowerRight, Center;
+        public Vector2 TopLeft, LowerRight;
         public Vector2 Dimensions;
-        public float? RejectionSqDistance;
         public float MinimumDistance;
         public float CellSize;
         public int GridWidth, GridHeight;

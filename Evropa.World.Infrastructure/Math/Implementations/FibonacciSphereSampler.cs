@@ -7,14 +7,14 @@ using MathNet.Numerics.Random;
 
 // Based on "Fast Poisson Disk Sampling in Arbitrary Dimensions" and implementations from Red Blob Games.
 // Algorithm from http://web.archive.org/web/20120421191837/http://www.cgafaq.info/wiki/Evenly_distributed_points_on_sphere
-public class FibonacciSphereGenerator : ISphereSampler
+public class FibonacciSphereSampler : ISphereSampler
 {
     private readonly RandomSource _randomSource;
 
     private float[] _randomLat = Array.Empty<float>();
     private float[] _randomLon = Array.Empty<float>();
 
-    public FibonacciSphereGenerator(RandomSource randomSource)
+    public FibonacciSphereSampler(RandomSource randomSource)
     {
         _randomSource = randomSource ?? throw new ArgumentNullException(nameof(randomSource));
     }

@@ -10,17 +10,17 @@ public class FibonacciSphereGeneratorUnitTests
 {
     private const float UnitSphereTolerance = 1e-4f;
 
-    private readonly FibonacciSphereGenerator _generator;
+    private readonly FibonacciSphereSampler _generator;
 
     public FibonacciSphereGeneratorUnitTests()
     {
-        _generator = new FibonacciSphereGenerator(new MersenneTwister(seed: 42));
+        _generator = new FibonacciSphereSampler(new MersenneTwister(seed: 42));
     }
 
     [Fact]
     public void Constructor_WithNullRandomSource_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => new FibonacciSphereGenerator(null!));
+        Assert.Throws<ArgumentNullException>(() => new FibonacciSphereSampler(null!));
     }
 
     [Theory]
@@ -91,8 +91,8 @@ public class FibonacciSphereGeneratorUnitTests
     {
         _ = jitter;
 
-        var generatorA = new FibonacciSphereGenerator(new MersenneTwister(seed: 1));
-        var generatorB = new FibonacciSphereGenerator(new MersenneTwister(seed: 2));
+        var generatorA = new FibonacciSphereSampler(new MersenneTwister(seed: 1));
+        var generatorB = new FibonacciSphereSampler(new MersenneTwister(seed: 2));
 
         var resultA = generatorA.SampleSphere(count);
         var resultB = generatorB.SampleSphere(count);
@@ -106,8 +106,8 @@ public class FibonacciSphereGeneratorUnitTests
     {
         _ = jitter;
 
-        var generatorA = new FibonacciSphereGenerator(new MersenneTwister(seed: 123));
-        var generatorB = new FibonacciSphereGenerator(new MersenneTwister(seed: 123));
+        var generatorA = new FibonacciSphereSampler(new MersenneTwister(seed: 123));
+        var generatorB = new FibonacciSphereSampler(new MersenneTwister(seed: 123));
 
         var resultA = generatorA.SampleSphere(count, jitter: 0.5f);
         var resultB = generatorB.SampleSphere(count, jitter: 0.5f);
@@ -121,8 +121,8 @@ public class FibonacciSphereGeneratorUnitTests
     {
         _ = jitter;
 
-        var generatorA = new FibonacciSphereGenerator(new MersenneTwister(seed: 7));
-        var generatorB = new FibonacciSphereGenerator(new MersenneTwister(seed: 7));
+        var generatorA = new FibonacciSphereSampler(new MersenneTwister(seed: 7));
+        var generatorB = new FibonacciSphereSampler(new MersenneTwister(seed: 7));
 
         var unjittered = generatorA.SampleSphere(count, jitter: 0f);
         var jittered = generatorB.SampleSphere(count, jitter: 0.5f);

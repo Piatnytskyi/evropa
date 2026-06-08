@@ -2,9 +2,7 @@ namespace Evropa.World.Infrastructure.Math.Implementations;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using Evropa.World.Core.Structs;
 using Evropa.World.Infrastructure.Math.Abstractions;
 
 public class QuadConverter : IQuadConverter
@@ -14,119 +12,76 @@ public class QuadConverter : IQuadConverter
         if (triangles.Length == 0)
             return Array.Empty<(Vector2, Vector2, Vector2, Vector2)>();
 
-        var faces = new Vector2[triangles.Length][];
-        for (int i = 0; i < triangles.Length; i++)
-        {
-            faces[i] = new[] { triangles[i].Item1, triangles[i].Item2, triangles[i].Item3 };
-        }
+        var faces = Array.ConvertAll(triangles, t => new[] { t.Item1, t.Item2, t.Item3 });
+        var (quads, remainingTris) = MergeAdjacentTriangles(faces);
 
-        var (quadFaces, remainingTriangles) = RemoveEdges(faces);
-
-        var result = new (Vector2, Vector2, Vector2, Vector2)[remainingTriangles.Length * 3 + quadFaces.Length * 4];
-        int writeIndex = 0;
-        SubdivideTriangles(remainingTriangles, result, ref writeIndex);
-        SubdivideQuads(quadFaces, result, ref writeIndex);
-
+        var result = new (Vector2, Vector2, Vector2, Vector2)[remainingTris.Count * 3 + quads.Count * 4];
+        int idx = 0;
+        foreach (var tri in remainingTris)
+            SubdivideTriangle(tri, result, ref idx);
+        foreach (var quad in quads)
+            SubdivideQuad(quad, result, ref idx);
         return result;
     }
 
-    private static (Vector2[][] quads, Vector2[][] remainingTriangles) RemoveEdges(
-        Vector2[][] faces)
+    private static (List<Vector2[]> quads, List<Vector2[]> remainingTris) MergeAdjacentTriangles(Vector2[][] faces)
     {
-        var edgeCounts = new Dictionary<Edge, int>(faces.Length * 3);
-        var edgeOrder = new Edge[faces.Length * 3];
-        int edgeOrderCount = 0;
-
+        var edgeToFaces = new Dictionary<(Vector2, Vector2), List<int>>();
         for (int i = 0; i < faces.Length; i++)
         {
             foreach (var edge in GetEdges(faces[i]))
             {
-                if (edgeCounts.TryGetValue(edge, out var count))
-                {
-                    edgeCounts[edge] = count + 1;
-                }
-                else
-                {
-                    edgeCounts[edge] = 1;
-                    edgeOrder[edgeOrderCount++] = edge;
-                }
+                if (!edgeToFaces.TryGetValue(edge, out var list))
+                    edgeToFaces[edge] = list = new List<int>(2);
+                list.Add(i);
             }
         }
 
-        var edgeToFaces = new Dictionary<Edge, int[]>(edgeCounts.Count);
-        var edgeFill = new Dictionary<Edge, int>(edgeCounts.Count);
-        foreach (var kvp in edgeCounts)
-        {
-            edgeToFaces[kvp.Key] = new int[kvp.Value];
-            edgeFill[kvp.Key] = 0;
-        }
-
-        for (int i = 0; i < faces.Length; i++)
-        {
-            foreach (var edge in GetEdges(faces[i]))
-            {
-                var arr = edgeToFaces[edge];
-                arr[edgeFill[edge]++] = i;
-            }
-        }
-
-        var available = new HashSet<Edge>(edgeToFaces.Keys);
+        var available = new HashSet<(Vector2, Vector2)>(edgeToFaces.Keys);
         var merged = new HashSet<int>();
-        var quadFaces = new Vector2[faces.Length / 2][];
-        int quadFacesCount = 0;
+        var quads = new List<Vector2[]>();
 
-        for (int k = 0; k < edgeOrderCount; k++)
+        foreach (var (edge, faceList) in edgeToFaces)
         {
-            var edge = edgeOrder[k];
-            if (!available.Contains(edge))
+            if (!available.Contains(edge) || faceList.Count != 2)
                 continue;
 
-            var faceIndices = edgeToFaces[edge];
-            if (faceIndices.Length != 2)
-                continue;
-
-            int f1 = faceIndices[0], f2 = faceIndices[1];
-
+            int f1 = faceList[0], f2 = faceList[1];
             if (merged.Contains(f1) || merged.Contains(f2))
                 continue;
 
-            if (faces[f1].Length != 3 || faces[f2].Length != 3)
-                continue;
-
-            quadFaces[quadFacesCount++] = MergeTriangles(faces[f1], faces[f2], edge);
+            quads.Add(MergeTriangles(faces[f1], faces[f2], edge));
             merged.Add(f1);
             merged.Add(f2);
 
-            foreach (var e in GetEdges(faces[f1]))
-                available.Remove(e);
-            foreach (var e in GetEdges(faces[f2]))
-                available.Remove(e);
+            foreach (var e in GetEdges(faces[f1])) available.Remove(e);
+            foreach (var e in GetEdges(faces[f2])) available.Remove(e);
         }
 
-        if (quadFacesCount != quadFaces.Length)
-            Array.Resize(ref quadFaces, quadFacesCount);
-
-        var remainingTriangles = new Vector2[faces.Length - merged.Count][];
-        int remainingIndex = 0;
+        var remainingTris = new List<Vector2[]>();
         for (int i = 0; i < faces.Length; i++)
-        {
             if (!merged.Contains(i))
-                remainingTriangles[remainingIndex++] = faces[i];
-        }
+                remainingTris.Add(faces[i]);
 
-        return (quadFaces, remainingTriangles);
+        return (quads, remainingTris);
     }
 
-    private static Vector2[] MergeTriangles(Vector2[] face1, Vector2[] face2, Edge sharedEdge)
+    private static Vector2[] MergeTriangles(Vector2[] face1, Vector2[] face2, (Vector2 V1, Vector2 V2) edge)
     {
-        var other1 = face1.First(v => !v.Equals(sharedEdge.V1) && !v.Equals(sharedEdge.V2));
-        var other2 = face2.First(v => !v.Equals(sharedEdge.V1) && !v.Equals(sharedEdge.V2));
-
-        var quad = new[] { sharedEdge.V1, other1, sharedEdge.V2, other2 };
+        var other1 = FindOther(face1, edge.V1, edge.V2);
+        var other2 = FindOther(face2, edge.V1, edge.V2);
+        var quad = new[] { edge.V1, other1, edge.V2, other2 };
         if (SignedArea(quad) < 0)
-            quad = new[] { sharedEdge.V1, other2, sharedEdge.V2, other1 };
-
+            (quad[1], quad[3]) = (quad[3], quad[1]);
         return quad;
+    }
+
+    private static Vector2 FindOther(Vector2[] face, Vector2 a, Vector2 b)
+    {
+        foreach (var v in face)
+            if (v != a && v != b)
+                return v;
+        throw new InvalidOperationException("No other vertex found.");
     }
 
     private static float SignedArea(Vector2[] polygon)
@@ -134,64 +89,45 @@ public class QuadConverter : IQuadConverter
         float sum = 0;
         for (int i = 0; i < polygon.Length; i++)
         {
-            var j = (i + 1) % polygon.Length;
+            int j = (i + 1) % polygon.Length;
             sum += polygon[i].X * polygon[j].Y - polygon[j].X * polygon[i].Y;
         }
         return sum;
     }
 
-    private static void SubdivideTriangles(
-        Vector2[][] triangles,
-        (Vector2, Vector2, Vector2, Vector2)[] result,
-        ref int writeIndex)
+    private static void SubdivideTriangle(Vector2[] tri, (Vector2, Vector2, Vector2, Vector2)[] result, ref int idx)
     {
-        foreach (var tri in triangles)
-        {
-            var a = tri[0];
-            var b = tri[1];
-            var c = tri[2];
-
-            var mAB = (a + b) * 0.5f;
-            var mBC = (b + c) * 0.5f;
-            var mCA = (c + a) * 0.5f;
-            var center = (a + b + c) / 3f;
-
-            result[writeIndex++] = (a, mAB, center, mCA);
-            result[writeIndex++] = (b, mBC, center, mAB);
-            result[writeIndex++] = (c, mCA, center, mBC);
-        }
+        var (a, b, c) = (tri[0], tri[1], tri[2]);
+        var mAB = (a + b) * 0.5f;
+        var mBC = (b + c) * 0.5f;
+        var mCA = (c + a) * 0.5f;
+        var center = (a + b + c) / 3f;
+        result[idx++] = (a, mAB, center, mCA);
+        result[idx++] = (b, mBC, center, mAB);
+        result[idx++] = (c, mCA, center, mBC);
     }
 
-    private static void SubdivideQuads(
-        Vector2[][] quads,
-        (Vector2, Vector2, Vector2, Vector2)[] result,
-        ref int writeIndex)
+    private static void SubdivideQuad(Vector2[] quad, (Vector2, Vector2, Vector2, Vector2)[] result, ref int idx)
     {
-        foreach (var quad in quads)
-        {
-            var a = quad[0];
-            var b = quad[1];
-            var c = quad[2];
-            var d = quad[3];
-
-            var mAB = (a + b) * 0.5f;
-            var mBC = (b + c) * 0.5f;
-            var mCD = (c + d) * 0.5f;
-            var mDA = (d + a) * 0.5f;
-            var center = (a + b + c + d) * 0.25f;
-
-            result[writeIndex++] = (a, mAB, center, mDA);
-            result[writeIndex++] = (b, mBC, center, mAB);
-            result[writeIndex++] = (c, mCD, center, mBC);
-            result[writeIndex++] = (d, mDA, center, mCD);
-        }
+        var (a, b, c, d) = (quad[0], quad[1], quad[2], quad[3]);
+        var mAB = (a + b) * 0.5f;
+        var mBC = (b + c) * 0.5f;
+        var mCD = (c + d) * 0.5f;
+        var mDA = (d + a) * 0.5f;
+        var center = (a + b + c + d) * 0.25f;
+        result[idx++] = (a, mAB, center, mDA);
+        result[idx++] = (b, mBC, center, mAB);
+        result[idx++] = (c, mCD, center, mBC);
+        result[idx++] = (d, mDA, center, mCD);
     }
 
-    private static IEnumerable<Edge> GetEdges(Vector2[] face)
+    private static IEnumerable<(Vector2, Vector2)> GetEdges(Vector2[] face)
     {
         for (int i = 0; i < face.Length; i++)
         {
-            yield return new Edge(face[i], face[(i + 1) % face.Length]);
+            var a = face[i];
+            var b = face[(i + 1) % face.Length];
+            yield return a.X < b.X || (a.X == b.X && a.Y <= b.Y) ? (a, b) : (b, a);
         }
     }
 }

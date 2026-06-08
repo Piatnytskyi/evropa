@@ -1,8 +1,8 @@
-namespace Evropa.World.Core.Structs;
+namespace Evropa.World.Core.Structs.Samplings;
 
 using System.Numerics;
 
-public readonly struct RectangleSamplingRegion
+public readonly struct RectangleSamplingRegion : ISamplingRegion
 {
     public Vector2 TopLeft { get; }
     public Vector2 LowerRight { get; }
@@ -17,6 +17,7 @@ public readonly struct RectangleSamplingRegion
         PointsPerIteration = pointsPerIteration;
     }
 
-    public static implicit operator SamplingRegion(RectangleSamplingRegion rect) =>
-        new(rect.TopLeft, rect.LowerRight, null, rect.MinimumDistance, rect.PointsPerIteration);
+    public bool Contains(Vector2 point) => 
+        point.X >= TopLeft.X && point.X < LowerRight.X && 
+        point.Y >= TopLeft.Y && point.Y < LowerRight.Y;
 }

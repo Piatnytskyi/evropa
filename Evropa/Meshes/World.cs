@@ -28,6 +28,14 @@ public partial class World : MeshInstance3D
 		var quadConverter = ServiceProviderFactory.ServiceProvider.GetRequiredService<IQuadConverter>();
 		var quads2D = quadConverter.ConvertToQuads(triangles2D);
 
+		var smoother = ServiceProviderFactory.ServiceProvider.GetRequiredService<IFaceSmoother>();
+		var faces = new System.Numerics.Vector2[quads2D.Length][];
+		for (int i = 0; i < quads2D.Length; i++)
+		{
+			faces[i] = new[] { quads2D[i].Item1, quads2D[i].Item2, quads2D[i].Item3, quads2D[i].Item4 };
+		}
+		faces = smoother.Smooth(faces);
+
 		var planeToSphere = new Dictionary<System.Numerics.Vector2, System.Numerics.Vector3>();
 		for (int i = 0; i < planePoints.Length; i++)
 		{
@@ -43,12 +51,12 @@ public partial class World : MeshInstance3D
 		var surfaceTool = new SurfaceTool();
 		surfaceTool.Begin(Mesh.PrimitiveType.Triangles);
 
-		foreach (var quad in quads2D)
+		foreach (var face in faces)
 		{
-			var v1 = ToSphere(quad.Item1);
-			var v2 = ToSphere(quad.Item2);
-			var v3 = ToSphere(quad.Item3);
-			var v4 = ToSphere(quad.Item4);
+			var v1 = ToSphere(face[0]);
+			var v2 = ToSphere(face[1]);
+			var v3 = ToSphere(face[2]);
+			var v4 = ToSphere(face[3]);
 
 			var vertex1 = new Vector3(v1.X, v1.Y, v1.Z) * SphereRadius;
 			var vertex2 = new Vector3(v2.X, v2.Y, v2.Z) * SphereRadius;

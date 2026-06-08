@@ -1,3 +1,4 @@
+using Evropa.World.Core.Structs.Samplings;
 using Evropa.World.Infrastructure.Math.Abstractions;
 using Evropa.World.Infrastructure.Math.Implementations;
 using MathNet.Numerics.Random;
@@ -13,11 +14,14 @@ public static class ServiceProviderFactory
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddTransient<RandomSource, MersenneTwister>();
-        serviceCollection.AddTransient<IDiskSampler, UniformPoissonDiskSampler>();
+        serviceCollection.AddTransient<IPlaneSampler<CircleSamplingRegion>, UniformPoissonSampler<CircleSamplingRegion>>();
+        serviceCollection.AddTransient<IPlaneSampler<RectangleSamplingRegion>, UniformPoissonSampler<RectangleSamplingRegion>>();
+        serviceCollection.AddTransient<IPlaneSampler<HexagonSamplingRegion>, UniformPoissonSampler<HexagonSamplingRegion>>();
         serviceCollection.AddTransient<ITriangulator, DelaunayTriangulator>();
         serviceCollection.AddTransient<IQuadConverter, QuadConverter>();
-        serviceCollection.AddTransient<ISphereSampler, FibonacciSphereGenerator>();
+        serviceCollection.AddTransient<ISphereSampler, FibonacciSphereSampler>();
         serviceCollection.AddTransient<IStereographicProjector, StereographicProjector>();
+        serviceCollection.AddTransient<IFaceSmoother, LaplacianSmoother>();
         ServiceProvider = serviceCollection.BuildServiceProvider();
     }
 }
