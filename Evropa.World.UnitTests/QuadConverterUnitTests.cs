@@ -14,7 +14,7 @@ public class QuadConverterUnitTests
     [Fact]
     public void ConvertToQuads_WithEmptyInput_ReturnsEmptyArray()
     {
-        var result = _converter.ConvertToQuads(Array.Empty<(Vector2, Vector2, Vector2)>());
+        var result = _converter.Convert(Array.Empty<(Vector2, Vector2, Vector2)>());
 
         Assert.NotNull(result);
         Assert.Empty(result);
@@ -23,14 +23,14 @@ public class QuadConverterUnitTests
     [Fact]
     public void ConvertToQuads_WithNullInput_Throws()
     {
-        Assert.ThrowsAny<Exception>(() => _converter.ConvertToQuads(null!));
+        Assert.ThrowsAny<Exception>(() => _converter.Convert(null!));
     }
 
     [Theory]
     [ClassData(typeof(QuadConverterPositiveData))]
     public void ConvertToQuads_ReturnsNonEmptyResult((Vector2, Vector2, Vector2)[] triangles)
     {
-        var result = _converter.ConvertToQuads(triangles);
+        var result = _converter.Convert(triangles);
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
@@ -45,7 +45,7 @@ public class QuadConverterUnitTests
         // and (3n - count) must be even (each merge replaces 2 triangles' 6 quads with 4).
         var n = triangles.Length;
 
-        var result = _converter.ConvertToQuads(triangles);
+        var result = _converter.Convert(triangles);
 
         Assert.InRange(result.Length, 2 * n, 3 * n);
         Assert.Equal(0, (3 * n - result.Length) % 2);
@@ -55,7 +55,7 @@ public class QuadConverterUnitTests
     [ClassData(typeof(QuadConverterPositiveData))]
     public void ConvertToQuads_AllQuadsHaveDistinctVertices((Vector2, Vector2, Vector2)[] triangles)
     {
-        var result = _converter.ConvertToQuads(triangles);
+        var result = _converter.Convert(triangles);
 
         Assert.All(result, quad =>
         {
@@ -68,7 +68,7 @@ public class QuadConverterUnitTests
     [ClassData(typeof(QuadConverterPositiveData))]
     public void ConvertToQuads_AllQuadsAreNonDegenerate((Vector2, Vector2, Vector2)[] triangles)
     {
-        var result = _converter.ConvertToQuads(triangles);
+        var result = _converter.Convert(triangles);
 
         Assert.All(result, quad =>
         {
@@ -88,7 +88,7 @@ public class QuadConverterUnitTests
             inputArea += MathF.Abs(TriangleSignedArea(a, b, c));
         }
 
-        var result = _converter.ConvertToQuads(triangles);
+        var result = _converter.Convert(triangles);
 
         float outputArea = 0f;
         foreach (var quad in result)
@@ -117,7 +117,7 @@ public class QuadConverterUnitTests
             }
         }
 
-        var result = _converter.ConvertToQuads(triangles);
+        var result = _converter.Convert(triangles);
 
         Assert.All(result, quad =>
         {

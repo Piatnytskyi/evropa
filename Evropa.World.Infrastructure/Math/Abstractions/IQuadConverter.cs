@@ -4,5 +4,5 @@ using System.Numerics;
 
 public interface IQuadConverter
 {
-    (Vector2, Vector2, Vector2, Vector2)[] ConvertToQuads((Vector2, Vector2, Vector2)[] triangles);
+    (Vector2, Vector2, Vector2, Vector2)[] Convert((Vector2, Vector2, Vector2)[] triangles);
 }

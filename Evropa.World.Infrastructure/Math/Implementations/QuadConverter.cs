@@ -7,7 +7,7 @@ using Evropa.World.Infrastructure.Math.Abstractions;
 
 public class QuadConverter : IQuadConverter
 {
-    public (Vector2, Vector2, Vector2, Vector2)[] ConvertToQuads((Vector2, Vector2, Vector2)[] triangles)
+    public (Vector2, Vector2, Vector2, Vector2)[] Convert((Vector2, Vector2, Vector2)[] triangles)
     {
         if (triangles.Length == 0)
             return Array.Empty<(Vector2, Vector2, Vector2, Vector2)>();

@@ -17,8 +17,10 @@ public static class ServiceProviderFactory
         serviceCollection.AddTransient<IPlaneSampler<CircleSamplingRegion>, UniformPoissonSampler<CircleSamplingRegion>>();
         serviceCollection.AddTransient<IPlaneSampler<RectangleSamplingRegion>, UniformPoissonSampler<RectangleSamplingRegion>>();
         serviceCollection.AddTransient<IPlaneSampler<HexagonSamplingRegion>, UniformPoissonSampler<HexagonSamplingRegion>>();
+        serviceCollection.AddTransient<IPlaneSampler<PolygonSamplingRegion>, UniformPoissonSampler<PolygonSamplingRegion>>();
         serviceCollection.AddTransient<ITriangulator, DelaunayTriangulator>();
         serviceCollection.AddTransient<IQuadConverter, QuadConverter>();
+        serviceCollection.AddTransient<IVoronoiDiagramCalculator, PseudoVoronoiDiagramCalculator>();
         serviceCollection.AddTransient<ISphereSampler, FibonacciSphereSampler>();
         serviceCollection.AddTransient<IStereographicProjector, StereographicProjector>();
         serviceCollection.AddTransient<IFaceSmoother, LaplacianSmoother>();
