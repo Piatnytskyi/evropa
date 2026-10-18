@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://b3ea5xxc1ntjw"]
+
+[ext_resource type="Script" uid="uid://dcwqctrg5m4xe" path="res://Scripts/Spectator.gd" id="2_2o727"]
+[ext_resource type="Script" uid="uid://c73axiyws1fn1" path="res://Meshes/World.cs" id="2_uo1fs"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_2o727"]
+
+[node name="Main" type="Node3D" unique_id=529784610]
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1348831345]
+transform = Transform3D(1, 0, 0, 0, 0.33245742, 0.9431183, 0, -0.9431183, 0.33245742, 0, 10, 0)
+script = ExtResource("2_2o727")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=508473767]
+transform = Transform3D(0.766044, -0.413176, -0.492404, 0, 0.766044, -0.642788, 0.642788, 0.492404, 0.586824, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1746235646]
+mesh = SubResource("SphereMesh_2o727")
+
+[node name="World" type="MeshInstance3D" parent="." unique_id=997802880]
+script = ExtResource("2_uo1fs")
