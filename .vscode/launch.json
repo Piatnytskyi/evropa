@@ -8,7 +8,7 @@
             "preLaunchTask": "build",
             "program": "${env:GODOT4}",
             "args": [],
-            "cwd": "${workspaceFolder}/Evropa",
+            "cwd": "${workspaceFolder}/src/Evropa.Client",
             "stopAtEntry": false,
         },
         {
@@ -19,10 +19,10 @@
             "program": "${env:GODOT4}",
             "args": [
                 "--upwards",
-                "${workspaceRoot}/Evropa/Scenes/Tutorial.tscn",
+                "${workspaceRoot}/src/Evropa.Client/Scenes/Tutorial.tscn",
                 "-q"
             ],
-            "cwd": "${workspaceFolder}/Evropa",
+            "cwd": "${workspaceFolder}/src/Evropa.Client",
             "stopAtEntry": false,
         },
         {
